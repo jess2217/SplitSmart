@@ -1,0 +1,71 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# Maven
+target/
+out/
+
+# Java
+*.class
+
+# H2 local database
+data/
+
+# Spring logs
+spring-error.txt
+
+# IDE
+.vscode/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Environment files
+.env
+.env.*
+# Backend
+backend/target/
+target/
+out/
+
+# H2 database
+data/
+
+# Java
+*.class
+
+# Logs
+spring-error.txt
+
+# IDE
+.vscode/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Environment variables
+.env
+.env.*
