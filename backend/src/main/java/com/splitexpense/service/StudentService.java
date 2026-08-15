@@ -1,4 +1,4 @@
-package com.splitexpense.service;
+
 
 import com.splitexpense.exception.StudentNotFoundException;
 import com.splitexpense.model.Student;
