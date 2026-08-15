@@ -1,58 +1,24 @@
-# SplitSmart — Student Expense & Settlement Manager
+# SplitSmart
 
-A Core Java console application designed around realistic college-student shared expenses.
+SplitSmart is a shared expense management application designed to make group expenses simple, organized, and easy to track.
 
 ## Features
 
-- Student management
-- Group management
-- Equal, exact and percentage expense splitting
+- User signup and login
+- Group creation and management
+- Add and remove group members
+- Add and delete expenses
+- Equal, exact, and percentage expense splitting
 - Balance calculation
-- Debt simplification
-- Who-do-I-owe / who-owes-me
-- What-if expense simulation
-- Spending analytics
-- Recurring expenses
-- Custom exceptions
-- Clean package structure
+- Settlement management
+- Responsive dashboard
 
-## Requirements
-
-- Java 17 or later
-- VS Code with Extension Pack for Java (recommended)
-
-## Structure
-
-`src` is the Java source root.
+## Project Structure
 
 ```text
-src/com/splitexpense/Main.java
-src/com/splitexpense/model/...
-```
-
-## Compile
-
-From the project root:
-
-```powershell
-javac -d out (Get-ChildItem -Recurse src -Filter *.java | ForEach-Object { $_.FullName })
-```
-
-## Run
-
-```powershell
-java -cp out com.splitexpense.Main
-```
-
-## Important algorithm
-
-`DebtSimplifier` separates creditors and debtors and greedily matches the largest outstanding balances to generate a compact settlement list.
-
-## Future learning stages
-
-- JUnit testing
-- SQL and JDBC persistence
-- Spring Boot REST API
-- JPA/Hibernate
-
-These are intentionally not included in this first Core Java version so the project remains understandable while learning Java fundamentals.
+SplitSmart/
+├── frontend/
+│   └── React + Vite application
+│
+└── backend/
+    └── Spring Boot REST API
