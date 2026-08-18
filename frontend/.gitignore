@@ -66,6 +66,10 @@ spring-error.txt
 frontend/node_modules/
 frontend/dist/
 
+
 # Environment variables
 .env
-.env.*
+*.env
+
+# Local application configuration
+application-local.properties

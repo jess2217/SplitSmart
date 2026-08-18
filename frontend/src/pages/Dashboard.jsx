@@ -11,6 +11,7 @@ import {
 function Dashboard({
     groups,
     groupData,
+    currentUser,
     onOpenGroup
 }) {
 
@@ -213,9 +214,9 @@ function Dashboard({
                         OVERVIEW
                     </p>
 
-                    <h1>
-                        Good to see you, Aprajita
-                    </h1>
+                  <h1>
+    Good to see you, {currentUser?.name || "User"}
+</h1>
 
                     <p className="page-description">
                         Here's what's happening
@@ -269,10 +270,9 @@ function Dashboard({
                         OVERVIEW
                     </p>
 
-                    <h1>
-                        Good to see you,
-                        Aprajita
-                    </h1>
+                   <h1>
+    Good to see you, {currentUser?.name || "User"}
+</h1>
 
                     <p className="page-description">
                         Here's what's happening

@@ -2,8 +2,10 @@ package com.splitexpense.controller;
 
 import com.splitexpense.model.Group;
 import com.splitexpense.model.Student;
+import com.splitexpense.model.User;
 import com.splitexpense.repository.GroupRepository;
 import com.splitexpense.repository.StudentRepository;
+import com.splitexpense.repository.UserRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -18,47 +20,59 @@ public class MemberController {
 
     private final GroupRepository groupRepository;
     private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
 
     public MemberController(
             GroupRepository groupRepository,
-            StudentRepository studentRepository) {
+            StudentRepository studentRepository,
+            UserRepository userRepository) {
 
         this.groupRepository = groupRepository;
         this.studentRepository = studentRepository;
-    }
-@DeleteMapping("/{studentId}")
-@ResponseStatus(HttpStatus.NO_CONTENT)
-public void deleteMember(
-        @PathVariable int groupId,
-        @PathVariable int studentId) {
-
-    Group group = getGroup(groupId);
-
-    Student student =
-            group.getMembers()
-                    .stream()
-                    .filter(member ->
-                            member.getId() == studentId)
-                    .findFirst()
-                    .orElseThrow(() ->
-                            new ResponseStatusException(
-                                    HttpStatus.NOT_FOUND,
-                                    "Student not found in this group."
-                            )
-                    );
-
-    boolean removed =
-            group.removeMember(student);
-
-    if (!removed) {
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Could not remove member."
-        );
+        this.userRepository = userRepository;
     }
 
-    groupRepository.save(group);
-}
+    // =========================
+    // DELETE MEMBER
+    // =========================
+
+    @DeleteMapping("/{studentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMember(
+            @PathVariable int groupId,
+            @PathVariable int studentId) {
+
+        Group group = getGroup(groupId);
+
+        Student student =
+                group.getMembers()
+                        .stream()
+                        .filter(member ->
+                                member.getId() == studentId)
+                        .findFirst()
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Student not found in this group."
+                                )
+                        );
+
+        boolean removed =
+                group.removeMember(student);
+
+        if (!removed) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Could not remove member."
+            );
+        }
+
+        groupRepository.save(group);
+    }
+
+    // =========================
+    // GET MEMBERS
+    // =========================
 
     @GetMapping
     public List<Student> getMembers(
@@ -69,6 +83,10 @@ public void deleteMember(
         return group.getMembers();
     }
 
+    // =========================
+    // ADD MEMBER
+    // =========================
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Student addMember(
@@ -76,6 +94,10 @@ public void deleteMember(
             @RequestBody CreateStudentRequest request) {
 
         Group group = getGroup(groupId);
+
+        // -------------------------
+        // VALIDATE REQUEST
+        // -------------------------
 
         if (request == null ||
                 request.name() == null ||
@@ -87,13 +109,85 @@ public void deleteMember(
             );
         }
 
-        Student student = new Student(
-                request.name().trim(),
-                request.email(),
-                request.college()
-        );
+        if (request.email() == null ||
+                request.email().isBlank()) {
 
-        student = studentRepository.save(student);
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Student email is required."
+            );
+        }
+
+        String email =
+                request.email()
+                        .trim()
+                        .toLowerCase();
+
+        // -------------------------
+        // FIND REGISTERED USER
+        // -------------------------
+
+        User user =
+                userRepository.findByEmail(email)
+                        .orElse(null);
+
+        Student student;
+
+        if (user != null) {
+
+            /*
+             * The person already has an account.
+             * Use the Student connected to that account.
+             */
+
+            if (user.getStudent() == null) {
+
+                student =
+                        new Student(
+                                user.getName(),
+                                user.getEmail(),
+                                request.college()
+                        );
+
+                user.setStudent(student);
+
+                userRepository.save(user);
+
+            } else {
+
+                student =
+                        user.getStudent();
+            }
+
+        } else {
+
+            /*
+             * No registered account exists.
+             * Check whether a Student already exists.
+             */
+
+            student =
+                    studentRepository
+                            .findByEmail(email)
+                            .orElse(null);
+
+            if (student == null) {
+
+                student =
+                        new Student(
+                                request.name().trim(),
+                                email,
+                                request.college()
+                        );
+
+                student =
+                        studentRepository.save(student);
+            }
+        }
+
+        // -------------------------
+        // ADD MEMBER TO GROUP
+        // -------------------------
 
         if (!group.addMember(student)) {
 
@@ -108,6 +202,10 @@ public void deleteMember(
         return student;
     }
 
+    // =========================
+    // FIND GROUP
+    // =========================
+
     private Group getGroup(int groupId) {
 
         return groupRepository.findById(groupId)
@@ -118,6 +216,10 @@ public void deleteMember(
                         )
                 );
     }
+
+    // =========================
+    // REQUEST DTO
+    // =========================
 
     public record CreateStudentRequest(
             String name,

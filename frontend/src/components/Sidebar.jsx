@@ -17,7 +17,8 @@ function Sidebar({
     open,
     setOpen,
     onAddExpense,
-    onLogout
+    onLogout,
+    currentUser
 }) {
 
     const [profileOpen, setProfileOpen] =
@@ -73,6 +74,14 @@ function Sidebar({
             onLogout();
         }
     }
+
+    const userName =
+        currentUser?.name || "User";
+
+    const userInitial =
+        userName
+            .charAt(0)
+            .toUpperCase();
 
     return (
         <>
@@ -142,11 +151,13 @@ function Sidebar({
                                     navigate(item.id)
                                 }
                             >
+
                                 <Icon size={19} />
 
                                 <span>
                                     {item.label}
                                 </span>
+
                             </button>
                         );
                     })}
@@ -183,24 +194,24 @@ function Sidebar({
 
                     <div className="profile-wrapper">
 
-                       <button
-    type="button"
-    className="profile-button"
-    onClick={() =>
-        setProfileOpen(
-            !profileOpen
-        )
-    }
->
+                        <button
+                            type="button"
+                            className="profile-button"
+                            onClick={() =>
+                                setProfileOpen(
+                                    !profileOpen
+                                )
+                            }
+                        >
 
                             <div className="profile-avatar">
-                                A
+                                {userInitial}
                             </div>
 
                             <div className="profile-info">
 
                                 <strong>
-                                    Aprajita
+                                    {userName}
                                 </strong>
 
                                 <small>

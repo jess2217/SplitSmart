@@ -81,18 +81,15 @@ function Settlements({
                                 >
 
                                     <div className="settlement-person">
+<div className="member-avatar">
+    {transaction.fromStudentName
+        ?.charAt(0)
+        ?.toUpperCase()}
+</div>
 
-                                        <div className="member-avatar">
-                                            {transaction.from
-                                                ?.name
-                                                ?.charAt(0)
-                                                ?.toUpperCase()}
-                                        </div>
-
-                                        <strong>
-                                            {transaction.from
-                                                ?.name}
-                                        </strong>
+<strong>
+    {transaction.fromStudentName}
+</strong>
 
                                     </div>
 
@@ -100,18 +97,15 @@ function Settlements({
 
                                     <div className="settlement-person">
 
-                                        <div className="member-avatar">
-                                            {transaction.to
-                                                ?.name
-                                                ?.charAt(0)
-                                                ?.toUpperCase()}
-                                        </div>
+                                      <div className="member-avatar">
+    {transaction.toStudentName
+        ?.charAt(0)
+        ?.toUpperCase()}
+</div>
 
-                                        <strong>
-                                            {transaction.to
-                                                ?.name}
-                                        </strong>
-
+<strong>
+    {transaction.toStudentName}
+</strong>
                                     </div>
 
                                     <div className="settlement-amount">

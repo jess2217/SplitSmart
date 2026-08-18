@@ -4,6 +4,8 @@ import {
     Mail
 } from "lucide-react";
 
+import { api } from "../services/Api";
+
 function Login({
     onLogin,
     onShowSignup
@@ -18,7 +20,7 @@ function Login({
     const [error, setError] =
         useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
 
@@ -26,6 +28,10 @@ function Login({
 
         const cleanEmail =
             email.trim().toLowerCase();
+
+        // =========================
+        // VALIDATION
+        // =========================
 
         if (!cleanEmail) {
 
@@ -45,88 +51,61 @@ function Login({
             return;
         }
 
-        /*
-         * Get the account created during signup.
-         */
-        const savedUser =
-            localStorage.getItem(
-                "splitsmart_user"
-            );
-
-        /*
-         * No account exists yet.
-         */
-        if (!savedUser) {
-
-            setError(
-                "No account found. Please sign up first."
-            );
-
-            return;
-        }
-
-        let user;
+        // =========================
+        // LOGIN THROUGH BACKEND
+        // =========================
 
         try {
 
-            user = JSON.parse(savedUser);
+            const user =
+                await api.login({
+                    email: cleanEmail,
+                    password: password
+                });
 
-        } catch (error) {
+            console.log(
+                "LOGIN SUCCESS:",
+                user
+            );
+
+            /*
+             * Store the current user.
+             *
+             * This is temporary for our
+             * current authentication setup.
+             */
+            localStorage.setItem(
+                "splitsmart_authenticated",
+                "true"
+            );
+
+            localStorage.setItem(
+                "splitsmart_current_user",
+                JSON.stringify(user)
+            );
+
+            /*
+             * Tell App.jsx that login
+             * was successful.
+             */
+            onLogin({
+                id: user.id,
+                name: user.name,
+                email: user.email
+            });
+
+        } catch (err) {
 
             console.error(
-                "USER DATA ERROR:",
-                error
+                "LOGIN ERROR:",
+                err
             );
 
             setError(
-                "Account data is corrupted. Please sign up again."
-            );
-
-            return;
-        }
-
-        /*
-         * Check email.
-         */
-        if (
-            user.email.toLowerCase() !==
-            cleanEmail
-        ) {
-
-            setError(
+                err.message ||
                 "Invalid email or password."
             );
-
-            return;
         }
-
-        /*
-         * Check password.
-         */
-        if (
-            user.password !==
-            password
-        ) {
-
-            setError(
-                "Invalid email or password."
-            );
-
-            return;
-        }
-
-        /*
-         * Login successful.
-         */
-        localStorage.setItem(
-            "splitsmart_authenticated",
-            "true"
-        );
-
-        onLogin({
-            name: user.name,
-            email: user.email
-        });
     };
 
     return (
@@ -147,6 +126,10 @@ function Login({
                 </p>
 
                 <form onSubmit={handleSubmit}>
+
+                    {/* =========================
+                        EMAIL
+                    ========================= */}
 
                     <div className="auth-field">
 
@@ -173,6 +156,10 @@ function Login({
 
                     </div>
 
+                    {/* =========================
+                        PASSWORD
+                    ========================= */}
+
                     <div className="auth-field">
 
                         <label>
@@ -198,11 +185,21 @@ function Login({
 
                     </div>
 
+                    {/* =========================
+                        ERROR
+                    ========================= */}
+
                     {error && (
+
                         <div className="auth-error">
                             {error}
                         </div>
+
                     )}
+
+                    {/* =========================
+                        LOGIN BUTTON
+                    ========================= */}
 
                     <button
                         type="submit"
@@ -212,6 +209,10 @@ function Login({
                     </button>
 
                 </form>
+
+                {/* =========================
+                    SIGNUP LINK
+                ========================= */}
 
                 <div className="auth-switch">
 

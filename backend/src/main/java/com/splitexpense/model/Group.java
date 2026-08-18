@@ -15,6 +15,9 @@ public class Group {
     private int id;
 
     private String name;
+    @ManyToOne(fetch = FetchType.EAGER)
+@JoinColumn(name = "owner_id")
+private User owner;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -92,6 +95,13 @@ private final List<Expense> expenses =
 
     expense.setGroup(this);
     expenses.add(expense);
+}
+public User getOwner() {
+    return owner;
+}
+
+public void setOwner(User owner) {
+    this.owner = owner;
 }
 
     @Override

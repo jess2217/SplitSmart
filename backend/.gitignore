@@ -1,0 +1,24 @@
+# Maven
+target/
+out/
+
+# Java
+*.class
+
+# Environment variables
+.env
+.env.*
+
+# Local configuration
+application-local.properties
+
+# Logs
+*.log
+spring-error.txt
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store

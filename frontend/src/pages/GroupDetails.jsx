@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import ExpenseItem from "../components/ExpenseItem";
-import { api } from "../services/api";
+import { api } from "../services/Api";
 
 function GroupDetails({
     group,

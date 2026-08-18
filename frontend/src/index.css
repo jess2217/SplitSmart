@@ -2952,7 +2952,7 @@ button {
     border-color: #8b3d48;
 
     color: #e56b76;
-}
+}}
 .auth-page {
     min-height: 100vh;
     width: 100%;
@@ -3335,5 +3335,4 @@ button {
 
 .sidebar .logout-button:hover {
     background: #171b24 !important;
-}
 }

@@ -1,106 +1,129 @@
 import { useState } from "react";
+import { api } from "../services/Api";
+
 import {
     User,
     Mail,
     Lock
 } from "lucide-react";
 
-function Signup({ onSignup, onShowLogin }) {
+function Signup({
+    onSignup,
+    onShowLogin
+}) {
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [name, setName] =
+        useState("");
+
+    const [email, setEmail] =
+        useState("");
+
+    const [password, setPassword] =
+        useState("");
+
     const [confirmPassword, setConfirmPassword] =
         useState("");
 
-    const [error, setError] = useState("");
+    const [error, setError] =
+        useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
 
         setError("");
 
-        const cleanName = name.trim();
-        const cleanEmail = email.trim().toLowerCase();
+        const cleanName =
+            name.trim();
+
+        const cleanEmail =
+            email.trim().toLowerCase();
+
+        // =========================
+        // VALIDATION
+        // =========================
 
         if (!cleanName) {
-            setError("Please enter your name.");
+
+            setError(
+                "Please enter your name."
+            );
+
             return;
         }
 
         if (!cleanEmail) {
-            setError("Please enter your email.");
+
+            setError(
+                "Please enter your email."
+            );
+
             return;
         }
 
         if (!password) {
-            setError("Please enter a password.");
+
+            setError(
+                "Please enter a password."
+            );
+
             return;
         }
 
         if (password.length < 6) {
+
             setError(
                 "Password must contain at least 6 characters."
             );
+
             return;
         }
 
         if (password !== confirmPassword) {
-            setError("Passwords do not match.");
+
+            setError(
+                "Passwords do not match."
+            );
+
             return;
         }
 
-        /*
-         * Check whether an account already exists.
-         */
-        const existingUser =
-            localStorage.getItem(
-                "splitsmart_user"
-            );
+        // =========================
+        // CREATE ACCOUNT
+        // =========================
 
-        if (existingUser) {
+        try {
 
             const user =
-                JSON.parse(existingUser);
+                await api.signup({
+                    name: cleanName,
+                    email: cleanEmail,
+                    password: password
+                });
 
-            if (
-                user.email.toLowerCase() ===
-                cleanEmail
-            ) {
+            console.log(
+                "ACCOUNT CREATED:",
+                user
+            );
 
-                setError(
-                    "An account with this email already exists. Please log in."
-                );
+            /*
+             * Tell App.jsx that signup
+             * was successful.
+             */
+            onSignup(user);
 
-                return;
-            }
+        } catch (err) {
+
+            console.error(
+                "SIGNUP ERROR:",
+                err
+            );
+
+            setError(
+                err.message ||
+                "Could not create your account."
+            );
         }
-
-        /*
-         * Temporarily save the account.
-         *
-         * This is only for the current
-         * frontend version.
-         */
-        const user = {
-            name: cleanName,
-            email: cleanEmail,
-            password: password
-        };
-
-        localStorage.setItem(
-            "splitsmart_user",
-            JSON.stringify(user)
-        );
-
-        /*
-         * Tell App.jsx that signup succeeded.
-         *
-         * App.jsx will redirect the user
-         * to the Login page.
-         */
-        onSignup(user);
     };
 
     return (
@@ -121,6 +144,10 @@ function Signup({ onSignup, onShowLogin }) {
                 </p>
 
                 <form onSubmit={handleSubmit}>
+
+                    {/* =========================
+                        FULL NAME
+                    ========================= */}
 
                     <div className="auth-field">
 
@@ -147,6 +174,10 @@ function Signup({ onSignup, onShowLogin }) {
 
                     </div>
 
+                    {/* =========================
+                        EMAIL
+                    ========================= */}
+
                     <div className="auth-field">
 
                         <label>
@@ -171,6 +202,10 @@ function Signup({ onSignup, onShowLogin }) {
                         </div>
 
                     </div>
+
+                    {/* =========================
+                        PASSWORD
+                    ========================= */}
 
                     <div className="auth-field">
 
@@ -197,6 +232,10 @@ function Signup({ onSignup, onShowLogin }) {
 
                     </div>
 
+                    {/* =========================
+                        CONFIRM PASSWORD
+                    ========================= */}
+
                     <div className="auth-field">
 
                         <label>
@@ -222,11 +261,23 @@ function Signup({ onSignup, onShowLogin }) {
 
                     </div>
 
+                    {/* =========================
+                        ERROR
+                    ========================= */}
+
                     {error && (
+
                         <div className="auth-error">
+
                             {error}
+
                         </div>
+
                     )}
+
+                    {/* =========================
+                        SUBMIT
+                    ========================= */}
 
                     <button
                         type="submit"
@@ -236,6 +287,10 @@ function Signup({ onSignup, onShowLogin }) {
                     </button>
 
                 </form>
+
+                {/* =========================
+                    LOGIN LINK
+                ========================= */}
 
                 <div className="auth-switch">
 

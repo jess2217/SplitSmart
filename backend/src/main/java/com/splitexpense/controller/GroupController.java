@@ -1,8 +1,10 @@
 package com.splitexpense.controller;
+import com.splitexpense.model.Student;
 
 import com.splitexpense.model.Group;
-import com.splitexpense.model.Student;
+import com.splitexpense.model.User;
 import com.splitexpense.repository.GroupRepository;
+import com.splitexpense.repository.UserRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +18,14 @@ import java.util.List;
 public class GroupController {
 
     private final GroupRepository groupRepository;
+    private final UserRepository userRepository;
 
     public GroupController(
-            GroupRepository groupRepository) {
+            GroupRepository groupRepository,
+            UserRepository userRepository) {
 
         this.groupRepository = groupRepository;
+        this.userRepository = userRepository;
     }
 
     // =========================
@@ -30,6 +35,7 @@ public class GroupController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Group createGroup(
+            @RequestParam int userId,
             @RequestBody CreateGroupRequest request) {
 
         if (request == null ||
@@ -42,10 +48,113 @@ public class GroupController {
             );
         }
 
+        User owner =
+                userRepository.findById(userId)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "User not found."
+                                )
+                        );
+
         Group group =
-                new Group(request.name().trim());
+                new Group(
+                        request.name().trim()
+                );
+
+        group.setOwner(owner);
 
         return groupRepository.save(group);
+    }
+
+    // =========================
+    // GET USER'S GROUPS
+    // =========================
+// =========================
+// GET USER'S GROUPS
+// =========================
+
+@GetMapping
+public List<Group> getGroups(
+        @RequestParam int userId) {
+
+    User user =
+            userRepository.findById(userId)
+                    .orElseThrow(() ->
+                            new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND,
+                                    "User not found."
+                            )
+                    );
+
+    /*
+     * Existing users may have been created
+     * before the User -> Student relationship
+     * was added.
+     *
+     * Create the missing Student automatically.
+     */
+    if (user.getStudent() == null) {
+
+        Student student =
+                new Student(
+                        user.getName(),
+                        user.getEmail(),
+                        ""
+                );
+
+        user.setStudent(student);
+
+        user =
+                userRepository.save(user);
+    }
+
+    return groupRepository.findByOwnerOrMembers(
+            user,
+            user.getStudent()
+    );
+}
+    // =========================
+    // GET ONE GROUP
+    // =========================
+
+    @GetMapping("/{id}")
+    public Group getGroup(
+            @PathVariable int id,
+            @RequestParam int userId) {
+
+        User user =
+                userRepository.findById(userId)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "User not found."
+                                )
+                        );
+
+        Group group =
+                groupRepository.findById(id)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Group not found."
+                                )
+                        );
+
+        /*
+         * Make sure the requested group
+         * belongs to this user.
+         */
+        if (group.getOwner() == null ||
+                group.getOwner().getId() != user.getId()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You do not have access to this group."
+            );
+        }
+
+        return group;
     }
 
     // =========================
@@ -55,7 +164,17 @@ public class GroupController {
     @DeleteMapping("/{groupId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteGroup(
-            @PathVariable int groupId) {
+            @PathVariable int groupId,
+            @RequestParam int userId) {
+
+        User user =
+                userRepository.findById(userId)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "User not found."
+                                )
+                        );
 
         Group group =
                 groupRepository.findById(groupId)
@@ -66,43 +185,19 @@ public class GroupController {
                                 )
                         );
 
+        /*
+         * Only the owner can delete the group.
+         */
+        if (group.getOwner() == null ||
+                group.getOwner().getId() != user.getId()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You cannot delete this group."
+            );
+        }
+
         groupRepository.delete(group);
-    }
-
-    // =========================
-    // DELETE MEMBER FROM GROUP
-    // =========================
-
-  
-    
-
-   
-
-    // =========================
-    // GET ALL GROUPS
-    // =========================
-
-    @GetMapping
-    public List<Group> getGroups() {
-
-        return groupRepository.findAll();
-    }
-
-    // =========================
-    // GET ONE GROUP
-    // =========================
-
-    @GetMapping("/{id}")
-    public Group getGroup(
-            @PathVariable int id) {
-
-        return groupRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "Group not found."
-                        )
-                );
     }
 
     // =========================

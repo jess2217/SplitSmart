@@ -13,22 +13,22 @@ function Balances({
 
     groups.forEach((group) => {
 
-        const data =
-            groupData[group.id];
+        const data = groupData[group.id];
 
         if (!data) return;
 
-        Object.entries(
-            data.balances || {}
-        ).forEach(([student, amount]) => {
+        const balances = data.balances || [];
 
-            rows.push({
-                group,
-                student,
-                amount: Number(amount)
-            });
+balances.forEach((balance) => {
 
-        });
+    rows.push({
+        group,
+        student: balance.studentName,
+        amount: Number(balance.balance)
+    });
+
+});
+
     });
 
     const owed =
@@ -110,6 +110,7 @@ function Balances({
                 <div className="section-heading">
 
                     <div>
+
                         <p className="eyebrow">
                             ALL BALANCES
                         </p>
@@ -117,6 +118,7 @@ function Balances({
                         <h2>
                             Current balances
                         </h2>
+
                     </div>
 
                 </div>
@@ -146,7 +148,7 @@ function Balances({
 
                             <div
                                 className="balance-row"
-                                key={index}
+                                key={`${row.group.id}-${index}`}
                             >
 
                                 <div>

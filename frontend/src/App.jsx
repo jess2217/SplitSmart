@@ -16,7 +16,7 @@ import AddExpense from "./pages/AddExpense";
 import Balances from "./pages/Balances";
 import Settlements from "./pages/Settlements";
 
-import { api } from "./services/api";
+import { api } from "./services/Api";
 
 function App() {
 
@@ -33,30 +33,49 @@ function App() {
             "splitsmart_authenticated"
         ) === "true"
     );
+    const [currentUser, setCurrentUser] =
+    useState(() => {
+
+        const savedUser =
+            localStorage.getItem(
+                "splitsmart_current_user"
+            );
+
+        if (!savedUser) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(savedUser);
+        } catch {
+            return null;
+        }
+    });
 
 const [authPage, setAuthPage] =
-    useState(
-        localStorage.getItem(
-            "splitsmart_user"
-        )
-            ? "login"
-            : "signup"
-    );
+    useState("login");
     // --------------------------------------------------
     // LOGIN
     // --------------------------------------------------
-
-   const handleLogin = (credentials) => {
+const handleLogin = (user) => {
 
     console.log(
         "Login successful:",
-        credentials
+        user
     );
 
     localStorage.setItem(
         "splitsmart_authenticated",
         "true"
     );
+    
+
+    localStorage.setItem(
+        "splitsmart_current_user",
+        JSON.stringify(user)
+    );
+
+    setCurrentUser(user);
 
     setIsAuthenticated(true);
 
@@ -76,6 +95,10 @@ const [authPage, setAuthPage] =
             "splitsmart_authenticated"
         );
 
+        localStorage.removeItem(
+    "splitsmart_current_user"
+);
+      setCurrentUser(null);
         // Log the user out
         setIsAuthenticated(false);
 
@@ -158,16 +181,43 @@ const handleSignup = (userData) => {
 
     async function loadGroups() {
 
+        if (!currentUser?.id) {
+            return;
+        }
+
         try {
 
             setLoading(true);
+            setError("");
 
             const data =
-                await api.getGroups();
+                await api.getGroups(
+                    currentUser.id
+                );
+
+            console.log(
+                "GROUPS API RESPONSE:",
+                data
+            );
+
+            if (!Array.isArray(data)) {
+
+                console.error(
+                    "Expected groups array but received:",
+                    data
+                );
+
+                setGroups([]);
+                setGroupData({});
+
+                setError(
+                    "Unable to load groups."
+                );
+
+                return;
+            }
 
             setGroups(data);
-
-            setError("");
 
             await loadGroupData(data);
 
@@ -178,6 +228,9 @@ const handleSignup = (userData) => {
                 err
             );
 
+            setGroups([]);
+            setGroupData({});
+
             setError(
                 err.message ||
                 "Unable to connect to the backend."
@@ -186,7 +239,6 @@ const handleSignup = (userData) => {
         } finally {
 
             setLoading(false);
-
         }
     }
 
@@ -198,6 +250,16 @@ const handleSignup = (userData) => {
     async function loadGroupData(
         groupList = groups
     ) {
+
+        if (!Array.isArray(groupList)) {
+
+            console.error(
+                "loadGroupData expected an array:",
+                groupList
+            );
+
+            return;
+        }
 
         const result = {};
 
@@ -265,7 +327,7 @@ const handleSignup = (userData) => {
 
         })();
 
-    }, [isAuthenticated]);
+    }, [isAuthenticated, currentUser]);
 
 
     // --------------------------------------------------
@@ -359,8 +421,11 @@ const handleSignup = (userData) => {
                 name
             );
 
-            const group =
-                await api.createGroup(name);
+           const group =
+    await api.createGroup(
+        name,
+        currentUser.id
+    );
 
             console.log(
                 "GROUP CREATED:",
@@ -411,7 +476,10 @@ const handleSignup = (userData) => {
 
         try {
 
-            await api.deleteGroup(groupId);
+            await api.deleteGroup(
+    groupId,
+    currentUser.id
+)
 
             console.log(
                 "Group deleted from database."
@@ -472,7 +540,7 @@ const handleSignup = (userData) => {
             );
 
             const updated =
-                await api.getGroups();
+                await api.getGroups(currentUser.id);
 
             setGroups(updated);
 
@@ -641,6 +709,7 @@ const handleSignup = (userData) => {
                 <Dashboard
                     groups={groups}
                     groupData={groupData}
+                    currentUser={currentUser}
                     onOpenGroup={
                         openGroup
                     }
@@ -835,25 +904,28 @@ const handleSignup = (userData) => {
             {/* SIDEBAR */}
 
             <Sidebar
-                activePage={
-                    activePage
-                }
-                setActivePage={
-                    setActivePage
-                }
-                open={
-                    mobileMenu
-                }
-                setOpen={
-                    setMobileMenu
-                }
-                onAddExpense={
-                    openCreateExpense
-                }
-                onLogout={
-                    handleLogout
-                }
-            />
+    activePage={
+        activePage
+    }
+    setActivePage={
+        setActivePage
+    }
+    open={
+        mobileMenu
+    }
+    setOpen={
+        setMobileMenu
+    }
+    onAddExpense={
+        openCreateExpense
+    }
+    onLogout={
+        handleLogout
+    }
+    currentUser={
+        currentUser
+    }
+/>
 
 
             {/* MAIN AREA */}
