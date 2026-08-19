@@ -18,8 +18,11 @@ public class CorsConfig {
                 new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of("http://localhost:5173")
-        );
+        List.of(
+                "http://localhost:5173",
+                "https://split-smart-oyw2uvt1a-jess2217s-projects.vercel.app/"
+        )
+);
 
         configuration.setAllowedMethods(
                 List.of(
