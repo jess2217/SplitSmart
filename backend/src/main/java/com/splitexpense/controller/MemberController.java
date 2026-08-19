@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/groups/{groupId}/members")
-@CrossOrigin(origins = "http://localhost:5173")
 public class MemberController {
 
     private final GroupRepository groupRepository;
@@ -86,121 +85,127 @@ public class MemberController {
     // =========================
     // ADD MEMBER
     // =========================
+@PostMapping
+@ResponseStatus(HttpStatus.CREATED)
+public Student addMember(
+        @PathVariable int groupId,
+        @RequestBody CreateStudentRequest request) {
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Student addMember(
-            @PathVariable int groupId,
-            @RequestBody CreateStudentRequest request) {
+    Group group = getGroup(groupId);
 
-        Group group = getGroup(groupId);
+    // -------------------------
+    // VALIDATE REQUEST
+    // -------------------------
 
-        // -------------------------
-        // VALIDATE REQUEST
-        // -------------------------
+    if (request == null ||
+            request.name() == null ||
+            request.name().isBlank()) {
 
-        if (request == null ||
-                request.name() == null ||
-                request.name().isBlank()) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Student name is required."
+        );
+    }
 
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Student name is required."
-            );
-        }
+    if (request.email() == null ||
+            request.email().isBlank()) {
 
-        if (request.email() == null ||
-                request.email().isBlank()) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Student email is required."
+        );
+    }
 
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Student email is required."
-            );
-        }
+    String email =
+            request.email()
+                    .trim()
+                    .toLowerCase();
 
-        String email =
-                request.email()
-                        .trim()
-                        .toLowerCase();
+    // -------------------------
+    // FIND REGISTERED USER
+    // -------------------------
 
-        // -------------------------
-        // FIND REGISTERED USER
-        // -------------------------
+    User user =
+            userRepository.findByEmail(email)
+                    .orElse(null);
 
-        User user =
-                userRepository.findByEmail(email)
-                        .orElse(null);
+    Student student;
 
-        Student student;
+    if (user != null) {
 
-        if (user != null) {
+        /*
+         * Registered user:
+         * ALWAYS use the Student connected
+         * to that User account.
+         */
+        student = user.getStudent();
 
-            /*
-             * The person already has an account.
-             * Use the Student connected to that account.
-             */
-
-            if (user.getStudent() == null) {
-
-                student =
-                        new Student(
-                                user.getName(),
-                                user.getEmail(),
-                                request.college()
-                        );
-
-                user.setStudent(student);
-
-                userRepository.save(user);
-
-            } else {
-
-                student =
-                        user.getStudent();
-            }
-
-        } else {
-
-            /*
-             * No registered account exists.
-             * Check whether a Student already exists.
-             */
+        /*
+         * Older accounts may not have a Student.
+         * Create one and attach it to the User.
+         */
+        if (student == null) {
 
             student =
-                    studentRepository
-                            .findByEmail(email)
-                            .orElse(null);
+                    new Student(
+                            user.getName(),
+                            user.getEmail(),
+                            request.college() == null
+                                    ? ""
+                                    : request.college()
+                    );
 
-            if (student == null) {
+            user.setStudent(student);
 
-                student =
-                        new Student(
-                                request.name().trim(),
-                                email,
-                                request.college()
-                        );
-
-                student =
-                        studentRepository.save(student);
-            }
+            userRepository.save(user);
         }
 
-        // -------------------------
-        // ADD MEMBER TO GROUP
-        // -------------------------
+    } else {
 
-        if (!group.addMember(student)) {
+        /*
+         * No registered account exists.
+         * Look for an existing Student.
+         */
+        student =
+                studentRepository
+                        .findByEmail(email)
+                        .orElse(null);
 
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Student is already in the group."
-            );
+        /*
+         * Create a Student only if one doesn't exist.
+         */
+        if (student == null) {
+
+            student =
+                    new Student(
+                            request.name().trim(),
+                            email,
+                            request.college() == null
+                                    ? ""
+                                    : request.college()
+                    );
+
+            student =
+                    studentRepository.save(student);
         }
-
-        groupRepository.save(group);
-
-        return student;
     }
+
+    // -------------------------
+    // ADD MEMBER TO GROUP
+    // -------------------------
+
+    if (!group.addMember(student)) {
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Student is already in the group."
+        );
+    }
+
+    groupRepository.save(group);
+
+    return student;
+}
 
     // =========================
     // FIND GROUP
