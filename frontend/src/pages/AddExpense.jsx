@@ -20,6 +20,9 @@ function AddExpense({
     const [category, setCategory] =
         useState("FOOD");
 
+    const [customCategory, setCustomCategory] =
+        useState("");
+
     const [splitType, setSplitType] =
         useState("EQUAL");
 
@@ -66,6 +69,15 @@ function AddExpense({
 
         if (!description.trim()) {
             setError("Enter an expense description.");
+            return;
+        }
+        if (
+            category === "OTHER" &&
+            !customCategory.trim()
+        ) {
+            setError(
+                "Enter a custom category."
+            );
             return;
         }
 
@@ -131,7 +143,11 @@ function AddExpense({
                 participantIds:
                     selectedMembers.map(Number),
 
-                category,
+                
+                category:
+                    category === "OTHER"
+                        ? customCategory.trim()
+                        : category,
 
                 splitType,
 
@@ -240,57 +256,81 @@ function AddExpense({
 
                     <div className="form-section">
 
-                        <label>
-                            Category
-                        </label>
+    <label>
+        Category
+    </label>
+ <select
+        value={category}
+        onChange={(e) => {
 
-                        <select
-                            value={category}
-                            onChange={(e) =>
-                                setCategory(
-                                    e.target.value
-                                )
-                            }
-                        >
-                            <option value="FOOD">
-                                Food
-                            </option>
+            const value =
+                e.target.value;
 
-                            <option value="TRAVEL">
-                                Travel
-                            </option>
+            setCategory(value);
 
-                            <option value="CAB">
-                                Cab
-                            </option>
+            if (value !== "OTHER") {
+                setCustomCategory("");
+            }
 
-                            <option value="RENT">
-                                Rent
-                            </option>
+        }}
+    >
 
-                            <option value="HOSTEL">
-                                Hostel
-                            </option>
+        <option value="FOOD">
+            Food
+        </option>
 
-                            <option value="GROCERIES">
-                                Groceries
-                            </option>
+        <option value="TRAVEL">
+            Travel
+        </option>
 
-                            <option value="ENTERTAINMENT">
-                                Entertainment
-                            </option>
+        <option value="CAB">
+            Cab
+        </option>
 
-                            <option value="ACADEMICS">
-                                Academics
-                            </option>
+        <option value="RENT">
+            Rent
+        </option>
 
-                            <option value="OTHER">
-                                Other
-                            </option>
+        <option value="HOSTEL">
+            Hostel
+        </option>
 
-                        </select>
+        <option value="GROCERIES">
+            Groceries
+        </option>
 
-                    </div>
+        <option value="ENTERTAINMENT">
+            Entertainment
+        </option>
+
+        <option value="ACADEMICS">
+            Academics
+        </option>
+
+        <option value="OTHER">
+            Other
+        </option>
+
+    </select>
+
+    {category === "OTHER" && (
+
+        <input
+            type="text"
+            value={customCategory}
+            onChange={(e) =>
+                setCustomCategory(
+                    e.target.value
+                )
+            }
+            placeholder="Enter custom category"
+            className="custom-category-input"
+        />
+
+    )}
+
+</div>
+
 
                 </div>
 
