@@ -245,7 +245,7 @@ function Members({
 
             </div>
 
-            {/* GROUP SELECTOR */}
+            
 
            {/* GROUP SELECTOR */}
 
@@ -408,7 +408,7 @@ function Members({
                                 <input
                                     type="text"
                                     className="form-input"
-                                    placeholder="e.g. Supriyo"
+                                    placeholder="e.g. Name of the member"
                                     value={
                                         memberName
                                     }
@@ -430,7 +430,7 @@ function Members({
                                 <input
                                     type="email"
                                     className="form-input"
-                                    placeholder="e.g. supriyo@email.com"
+                                    placeholder="e.g. name@email.com"
                                     value={
                                         memberEmail
                                     }
@@ -482,7 +482,7 @@ function Members({
                         </form>
                     )}
 
-                    {/* MEMBER LIST */}
+                   
 
                 {/* MEMBER LIST */}
 
