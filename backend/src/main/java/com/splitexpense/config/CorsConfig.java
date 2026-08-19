@@ -13,7 +13,7 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(
                         "http://localhost:5173",
-                        "https://split-smart-oyw2uvt1a-jess2217s-projects.vercel.app"
+                        "split-smart-lake.vercel.app"
                 )
                 .allowedMethods(
                         "GET",

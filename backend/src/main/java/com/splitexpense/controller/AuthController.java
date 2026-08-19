@@ -13,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = {
         "http://localhost:5173",
-        "https://split-smart-oyw2uvt1a-jess2217s-projects.vercel.app/"
+        "split-smart-lake.vercel.app"
 })
 public class AuthController {
 
