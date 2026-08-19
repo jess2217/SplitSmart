@@ -1,53 +1,85 @@
 package com.splitexpense.config;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import java.io.IOException;
 
 @Configuration
 public class CorsConfig {
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public Filter corsFilter() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+        return new Filter() {
 
-        configuration.setAllowedOrigins(
-                List.of(
-                        "http://localhost:5173",
-                        "https://split-smart-lake.vercel.app"
-                )
-        );
+            @Override
+           public void doFilter(
+        ServletRequest request,
+        ServletResponse response,
+        FilterChain chain)
+        throws IOException, ServletException {
 
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "OPTIONS"
-                )
-        );
+                HttpServletRequest httpRequest =
+                        (HttpServletRequest) request;
 
-        configuration.setAllowedHeaders(
-                List.of("*")
-        );
+                HttpServletResponse httpResponse =
+                        (HttpServletResponse) response;
 
-        configuration.setAllowCredentials(true);
+                String origin =
+                        httpRequest.getHeader("Origin");
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+                if ("http://localhost:5173".equals(origin)
+                        || "https://split-smart-lake.vercel.app".equals(origin)) {
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+                    httpResponse.setHeader(
+                            "Access-Control-Allow-Origin",
+                            origin
+                    );
 
-        return source;
+                    httpResponse.setHeader(
+                            "Access-Control-Allow-Methods",
+                            "GET, POST, PUT, DELETE, OPTIONS"
+                    );
+
+                    httpResponse.setHeader(
+                            "Access-Control-Allow-Headers",
+                            "Content-Type"
+                    );
+
+                    httpResponse.setHeader(
+                            "Access-Control-Allow-Credentials",
+                            "true"
+                    );
+
+                    httpResponse.setHeader(
+                            "Access-Control-Max-Age",
+                            "1800"
+                    );
+                }
+
+                if ("OPTIONS".equalsIgnoreCase(
+                        httpRequest.getMethod())) {
+
+                    httpResponse.setStatus(
+                            HttpServletResponse.SC_OK
+                    );
+
+                    return;
+                }
+
+                chain.doFilter(
+                        request,
+                        response
+                );
+            }
+        };
     }
 }
