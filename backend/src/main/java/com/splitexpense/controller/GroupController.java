@@ -1,6 +1,6 @@
 package com.splitexpense.controller;
-import com.splitexpense.model.Student;
 
+import com.splitexpense.model.Student;
 import com.splitexpense.model.Group;
 import com.splitexpense.model.User;
 import com.splitexpense.repository.GroupRepository;
@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/groups")
-@CrossOrigin(origins = "http://localhost:5173")
 public class GroupController {
 
     private final GroupRepository groupRepository;
@@ -70,50 +69,53 @@ public class GroupController {
     // =========================
     // GET USER'S GROUPS
     // =========================
-// =========================
-// GET USER'S GROUPS
-// =========================
 
-@GetMapping
-public List<Group> getGroups(
-        @RequestParam int userId) {
+    @GetMapping
+    public List<Group> getGroups(
+            @RequestParam int userId) {
 
-    User user =
-            userRepository.findById(userId)
-                    .orElseThrow(() ->
-                            new ResponseStatusException(
-                                    HttpStatus.NOT_FOUND,
-                                    "User not found."
-                            )
+        User user =
+                userRepository.findById(userId)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "User not found."
+                                )
+                        );
+
+        /*
+         * Existing users may have been created
+         * before the User -> Student relationship
+         * was added.
+         *
+         * Create the missing Student automatically.
+         */
+        if (user.getStudent() == null) {
+
+            Student student =
+                    new Student(
+                            user.getName(),
+                            user.getEmail(),
+                            ""
                     );
 
-    /*
-     * Existing users may have been created
-     * before the User -> Student relationship
-     * was added.
-     *
-     * Create the missing Student automatically.
-     */
-    if (user.getStudent() == null) {
+            user.setStudent(student);
 
-        Student student =
-                new Student(
-                        user.getName(),
-                        user.getEmail(),
-                        ""
-                );
+            user =
+                    userRepository.save(user);
+        }
 
-        user.setStudent(student);
-
-        user =
-                userRepository.save(user);
+        /*
+         * Return groups where the user is either:
+         * 1. The owner
+         * 2. A member
+         */
+        return groupRepository.findByOwnerOrMembers(
+                user,
+                user.getStudent()
+        );
     }
 
-    return groupRepository.findByOwnerOrMembers(
-            user,
-            user.getStudent()
-    );
-}
     // =========================
     // GET ONE GROUP
     // =========================
@@ -142,11 +144,20 @@ public List<Group> getGroups(
                         );
 
         /*
-         * Make sure the requested group
-         * belongs to this user.
+         * Allow access if the user is:
+         * 1. The owner
+         * OR
+         * 2. A member of the group
          */
-        if (group.getOwner() == null ||
-                group.getOwner().getId() != user.getId()) {
+        boolean isOwner =
+                group.getOwner() != null &&
+                group.getOwner().getId() == user.getId();
+
+        boolean isMember =
+                user.getStudent() != null &&
+                group.getMembers().contains(user.getStudent());
+
+        if (!isOwner && !isMember) {
 
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
