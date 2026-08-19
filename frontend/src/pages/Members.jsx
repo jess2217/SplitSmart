@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Users, UserPlus, Trash2 } from "lucide-react";
 import { api } from "../services/Api";
 
@@ -31,6 +31,21 @@ function Members({
 
     const [error, setError] =
         useState("");
+        useEffect(() => {
+
+    if (
+        !selectedGroupId &&
+        groups &&
+        groups.length > 0
+    ) {
+        onSelectGroup(groups[0].id);
+    }
+
+}, [
+    groups,
+    selectedGroupId,
+    onSelectGroup
+]);
 
     const selectedGroup =
         groups.find(
@@ -232,51 +247,58 @@ function Members({
 
             {/* GROUP SELECTOR */}
 
-            <div className="form-group">
+           {/* GROUP SELECTOR */}
 
-                <label>
-                    Select Group
-                </label>
+<div className="members-group-selector">
 
-                <select
-                    className="form-input"
-                    value={
-                        selectedGroupId || ""
-                    }
-                    onChange={(event) => {
+    <div className="members-selector-icon">
+        <Users size={19} />
+    </div>
 
-                        const value =
-                            event.target.value;
+    <div className="members-selector-content">
 
-                        onSelectGroup(
-                            value
-                                ? Number(value)
-                                : null
-                        );
+        <label>
+            GROUP
+        </label>
 
-                        setShowAddForm(false);
-                        setError("");
-                    }}
+        <select
+            value={selectedGroupId || ""}
+            onChange={(event) => {
+
+                const value =
+                    event.target.value;
+
+                onSelectGroup(
+                    value
+                        ? Number(value)
+                        : null
+                );
+
+                setShowAddForm(false);
+                setError("");
+            }}
+        >
+
+            <option value="">
+                Select a group
+            </option>
+
+            {groups.map((group) => (
+
+                <option
+                    key={group.id}
+                    value={group.id}
                 >
+                    {group.name}
+                </option>
 
-                    <option value="">
-                        Select a group
-                    </option>
+            ))}
 
-                    {groups.map((group) => (
+        </select>
 
-                        <option
-                            key={group.id}
-                            value={group.id}
-                        >
-                            {group.name}
-                        </option>
+    </div>
 
-                    ))}
-
-                </select>
-
-            </div>
+</div>
 
             {/* ERROR */}
 
@@ -304,50 +326,68 @@ function Members({
 
             {selectedGroup && (
 
-                <section className="dashboard-panel">
+               <section className="dashboard-panel members-panel">
 
                     {/* HEADER */}
 
-                    <div className="dashboard-panel-header">
+                  <div className="dashboard-panel-header members-panel-header">
 
-                        <div>
+    <div className="members-title-area">
 
-                            <p className="eyebrow">
-                                GROUP MEMBERS
-                            </p>
+        <div className="members-group-avatar">
+            {selectedGroup.name
+                ?.charAt(0)
+                ?.toUpperCase()}
+        </div>
 
-                            <h2>
-                                {selectedGroup.name}
-                            </h2>
+        <div>
 
-                        </div>
+            <p className="eyebrow">
+                GROUP MEMBERS
+            </p>
 
-                        {isOwner && (
+            <h2>
+                {selectedGroup.name}
+            </h2>
 
-                            <button
-                                type="button"
-                                className="primary-button"
-                                onClick={() => {
+            <span className="members-count">
+                {members.length}{" "}
+                {members.length === 1
+                    ? "member"
+                    : "members"}
+            </span>
 
-                                    setShowAddForm(
-                                        !showAddForm
-                                    );
+        </div>
 
-                                    setError("");
-                                }}
-                            >
+    </div>
 
-                                <UserPlus size={17} />
+    {isOwner && (
 
-                                {showAddForm
-                                    ? "Cancel"
-                                    : "Add Member"}
+        <button
+            type="button"
+            className="primary-button"
+            onClick={() => {
 
-                            </button>
-                        )}
+                setShowAddForm(
+                    !showAddForm
+                );
 
-                    </div>
+                setError("");
 
+            }}
+        >
+
+            <UserPlus size={17} />
+
+            {showAddForm
+                ? "Cancel"
+                : "Add Member"}
+
+        </button>
+
+    )}
+
+</div>
                     {/* ADD MEMBER FORM */}
 
                     {showAddForm && isOwner && (
@@ -444,102 +484,117 @@ function Members({
 
                     {/* MEMBER LIST */}
 
-                    <div className="dashboard-group-list">
+                {/* MEMBER LIST */}
 
-                        {members.map((member) => {
+<div className="dashboard-group-list">
 
-                            const isCurrentUser =
-                                member.email?.toLowerCase() ===
-                                currentUser?.email?.toLowerCase();
+    {members.map((member) => {
 
-                            return (
+        const isCurrentUser =
+            member.email?.toLowerCase() ===
+            currentUser?.email?.toLowerCase();
 
-                                <div
-                                    className="dashboard-group-row"
-                                    key={member.id}
-                                >
+        const isGroupOwner =
+            selectedGroup.owner?.email?.toLowerCase() ===
+            member.email?.toLowerCase();
 
-                                    <div className="dashboard-group-avatar">
+        return (
+            <div
+                className="dashboard-group-row members-row"
+                key={member.id}
+            >
 
-                                        {member.name
-                                            ?.charAt(0)
-                                            ?.toUpperCase()}
+                {/* AVATAR */}
 
-                                    </div>
+                <div className="dashboard-group-avatar">
 
-                                    <div className="dashboard-group-info">
+                    {member.name
+                        ?.charAt(0)
+                        ?.toUpperCase()}
 
-                                        <strong>
-                                            {member.name}
-                                        </strong>
+                </div>
 
-                                        <span>
-                                            {member.email}
-                                        </span>
 
-                                        {isCurrentUser && (
+                {/* MEMBER INFORMATION */}
 
-                                            <small>
-                                                You
-                                            </small>
+                <div className="dashboard-group-info">
 
-                                        )}
+                    <strong>
+                        {member.name}
+                    </strong>
 
-                                    </div>
+                    <span>
+                        {member.email}
+                    </span>
 
-                                    {isCurrentUser && (
+                    {isCurrentUser && (
+                        <small>
+                            You
+                        </small>
+                    )}
 
-                                        <span>
-                                            Owner
-                                        </span>
+                </div>
 
-                                    )}
 
-                                    {isOwner &&
-                                        !isCurrentUser && (
+                {/* OWNER BADGE */}
 
-                                        <button
-                                            type="button"
-                                            className="secondary-button"
-                                            disabled={
-                                                removingId ===
-                                                member.id
-                                            }
-                                            onClick={() =>
-                                                handleRemoveMember(
-                                                    member.id
-                                                )
-                                            }
-                                        >
+                {isGroupOwner && (
+                    <span className="member-owner-badge">
+                        Owner
+                    </span>
+                )}
 
-                                            <Trash2
-                                                size={16}
-                                            />
 
-                                            {removingId ===
-                                            member.id
-                                                ? "Removing..."
-                                                : "Remove"}
+                {/* REMOVE BUTTON */}
 
-                                        </button>
-                                    )}
+                {isOwner &&
+                    !isCurrentUser &&
+                    !isGroupOwner && (
 
-                                </div>
-                            );
+                    <button
+                        type="button"
+                        className="member-remove-button"
+                        disabled={
+                            removingId === member.id
+                        }
+                        onClick={() =>
+                            handleRemoveMember(
+                                member.id
+                            )
+                        }
+                    >
 
-                        })}
+                        <Trash2 size={15} />
 
-                        {members.length === 0 && (
+                        <span>
+                            {removingId === member.id
+                                ? "Removing..."
+                                : "Remove"}
+                        </span>
 
-                            <div className="dashboard-panel-empty">
+                    </button>
 
-                                No members found.
+                )}
 
-                            </div>
+            </div>
+        );
 
-                        )}
+    })}
 
-                    </div>
+
+    {/* EMPTY STATE */}
+
+    {members.length === 0 && (
+
+        <div className="dashboard-panel-empty">
+
+            No members found.
+
+        </div>
+
+    )}
+
+</div>
 
                 </section>
             )}
