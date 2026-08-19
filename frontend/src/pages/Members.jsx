@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Users, UserPlus, Trash2 } from "lucide-react";
 import { api } from "../services/Api";
 
@@ -31,21 +31,7 @@ function Members({
 
     const [error, setError] =
         useState("");
-        useEffect(() => {
-
-    if (
-        !selectedGroupId &&
-        groups &&
-        groups.length > 0
-    ) {
-        onSelectGroup(groups[0].id);
-    }
-
-}, [
-    groups,
-    selectedGroupId,
-    onSelectGroup
-]);
+    
 
     const selectedGroup =
         groups.find(
