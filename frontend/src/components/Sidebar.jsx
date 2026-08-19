@@ -24,33 +24,39 @@ function Sidebar({
     const [profileOpen, setProfileOpen] =
         useState(false);
 
-    const items = [
-        {
-            id: "dashboard",
-            label: "Dashboard",
-            icon: LayoutDashboard
-        },
-        {
-            id: "groups",
-            label: "Groups",
-            icon: Users
-        },
-        {
-            id: "expenses",
-            label: "Expenses",
-            icon: Receipt
-        },
-        {
-            id: "balances",
-            label: "Balances",
-            icon: Wallet
-        },
-        {
-            id: "settlements",
-            label: "Settlements",
-            icon: ArrowRightLeft
-        }
-    ];
+  const items = [
+    {
+        id: "dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard
+    },
+    {
+        id: "groups",
+        label: "Groups",
+        icon: Users
+    },
+    {
+        id: "members",
+        label: "Members",
+        icon: Users
+    },
+    {
+        id: "expenses",
+        label: "Expenses",
+        icon: Receipt
+    },
+    {
+        id: "balances",
+        label: "Balances",
+        icon: Wallet
+    },
+    {
+        id: "settlements",
+        label: "Settlements",
+        icon: ArrowRightLeft
+    }
+];
+    
 
     function navigate(id) {
         setActivePage(id);

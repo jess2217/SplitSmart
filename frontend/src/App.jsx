@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Expenses from "./pages/Expenses";
-
+import Members from "./pages/Members";
 import {
     Menu,
     RefreshCw
@@ -821,7 +821,25 @@ const handleSignup = (userData) => {
                 />
             );
         }
+// ----------------------------------------------
+// MEMBERS
+// ----------------------------------------------
 
+if (
+    activePage === "members"
+) {
+
+    return (
+        <Members
+            groups={groups}
+            groupData={groupData}
+            currentUser={currentUser}
+            selectedGroupId={selectedGroupId}
+            onSelectGroup={setSelectedGroupId}
+            onMemberChanged={handleMemberAdded}
+        />
+    );
+}
 
         // ----------------------------------------------
         // BALANCES

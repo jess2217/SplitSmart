@@ -39,10 +39,28 @@ public class MemberController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMember(
             @PathVariable int groupId,
-            @PathVariable int studentId) {
+            @PathVariable int studentId,
+         @RequestParam int userId) {
 
         Group group = getGroup(groupId);
+User user =
+        userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "User not found."
+                        )
+                );
 
+// Only the group owner can remove members
+if (group.getOwner() == null ||
+        group.getOwner().getId() != user.getId()) {
+
+    throw new ResponseStatusException(
+            HttpStatus.FORBIDDEN,
+            "Only the group owner can remove members."
+    );
+}
         Student student =
                 group.getMembers()
                         .stream()

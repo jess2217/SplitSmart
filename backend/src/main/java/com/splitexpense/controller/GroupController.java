@@ -55,15 +55,31 @@ public class GroupController {
                                         "User not found."
                                 )
                         );
+Group group =
+        new Group(
+                request.name().trim()
+        );
 
-        Group group =
-                new Group(
-                        request.name().trim()
-                );
+group.setOwner(owner);
 
-        group.setOwner(owner);
+if (owner.getStudent() == null) {
 
-        return groupRepository.save(group);
+    Student student =
+            new Student(
+                    owner.getName(),
+                    owner.getEmail(),
+                    ""
+            );
+
+    owner.setStudent(student);
+
+    owner =
+            userRepository.save(owner);
+}
+
+group.addMember(owner.getStudent());
+
+return groupRepository.save(group);
     }
 
     // =========================

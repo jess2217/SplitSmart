@@ -141,16 +141,16 @@ export const api = {
         ),
 
     deleteMember: (
-        groupId,
-        studentId
-    ) =>
-        request(
-            `/groups/${groupId}/members/${studentId}`,
-            {
-                method: "DELETE"
-            }
-        ),
-
+    groupId,
+    studentId,
+    userId
+) =>
+    request(
+        `/groups/${groupId}/members/${studentId}?userId=${userId}`,
+        {
+            method: "DELETE"
+        }
+    ),
 
     // =========================
     // EXPENSES
