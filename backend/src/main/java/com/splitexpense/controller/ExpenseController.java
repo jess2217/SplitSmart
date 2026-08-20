@@ -32,13 +32,22 @@ public class ExpenseController {
         this.expenseService = expenseService;
     }
 
+    // =========================
+    // ADD EXPENSE
+    // =========================
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Expense addExpense(
             @PathVariable int groupId,
             @RequestBody CreateExpenseRequest request) {
 
+        // -------------------------
+        // VALIDATE REQUEST
+        // -------------------------
+
         if (request == null) {
+
             throw new IllegalArgumentException(
                     "Expense data is required."
             );
@@ -53,34 +62,71 @@ public class ExpenseController {
         }
 
         if (request.amount() <= 0) {
+
             throw new IllegalArgumentException(
                     "Expense amount must be positive."
             );
         }
 
         if (request.category() == null) {
+
             throw new IllegalArgumentException(
                     "Expense category is required."
             );
         }
 
         if (request.splitType() == null) {
+
             throw new IllegalArgumentException(
                     "Split type is required."
             );
         }
 
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Group not found: " + groupId
-                        )
+        // -------------------------
+        // CUSTOM CATEGORY
+        // -------------------------
+
+        String customCategory = null;
+
+        if (request.category() == ExpenseCategory.OTHER) {
+
+            if (request.customCategory() == null ||
+                    request.customCategory().isBlank()) {
+
+                throw new IllegalArgumentException(
+                        "Custom category is required when category is OTHER."
+                );
+            }
+
+            customCategory =
+                    request.customCategory().trim();
+        }
+
+        // -------------------------
+        // FIND GROUP
+        // -------------------------
+
+        Group group =
+                groupRepository.findById(groupId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Group not found: " + groupId
+                                )
+                        );
+
+        // -------------------------
+        // FIND PAYER
+        // -------------------------
+
+        Student payer =
+                findStudent(
+                        group,
+                        request.payerId()
                 );
 
-        Student payer = findStudent(
-                group,
-                request.payerId()
-        );
+        // -------------------------
+        // VALIDATE PARTICIPANTS
+        // -------------------------
 
         if (request.participantIds() == null ||
                 request.participantIds().isEmpty()) {
@@ -90,31 +136,41 @@ public class ExpenseController {
             );
         }
 
-        List<Student> participants = new ArrayList<>();
+        List<Student> participants =
+                new ArrayList<>();
 
-        for (Integer studentId : request.participantIds()) {
+        for (Integer studentId :
+                request.participantIds()) {
 
-            Student student = findStudent(
-                    group,
-                    studentId
-            );
+            Student student =
+                    findStudent(
+                            group,
+                            studentId
+                    );
 
             if (!participants.contains(student)) {
+
                 participants.add(student);
             }
         }
 
-        Map<Student, Double> values = new HashMap<>();
+        // -------------------------
+        // CUSTOM SPLIT VALUES
+        // -------------------------
+
+        Map<Student, Double> values =
+                new HashMap<>();
 
         if (request.values() != null) {
 
             for (Map.Entry<Integer, Double> entry :
                     request.values().entrySet()) {
 
-                Student student = findStudent(
-                        group,
-                        entry.getKey()
-                );
+                Student student =
+                        findStudent(
+                                group,
+                                entry.getKey()
+                        );
 
                 values.put(
                         student,
@@ -123,6 +179,10 @@ public class ExpenseController {
             }
         }
 
+        // -------------------------
+        // SAVE EXPENSE
+        // -------------------------
+
         return expenseService.addExpense(
                 group,
                 request.description().trim(),
@@ -130,49 +190,65 @@ public class ExpenseController {
                 payer,
                 participants,
                 request.category(),
+                customCategory,
                 request.splitType(),
                 values
         );
     }
 
+    // =========================
+    // GET EXPENSES
+    // =========================
+
     @GetMapping
     public List<Expense> getExpenses(
             @PathVariable int groupId) {
 
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Group not found: " + groupId
-                        )
-                );
+        Group group =
+                groupRepository.findById(groupId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Group not found: " + groupId
+                                )
+                        );
 
         return expenseService.getExpenses(group);
     }
-  @DeleteMapping("/{expenseId}")
-@ResponseStatus(HttpStatus.NO_CONTENT)
-public void deleteExpense(
-        @PathVariable int groupId,
-        @PathVariable int expenseId) {
 
-    Group group =
-            groupRepository.findById(groupId)
-                    .orElseThrow(() ->
-                            new IllegalArgumentException(
-                                    "Group not found: " + groupId
-                            )
-                    );
+    // =========================
+    // DELETE EXPENSE
+    // =========================
 
-    expenseService.deleteExpense(
-            group,
-            expenseId
-    );
-}
+    @DeleteMapping("/{expenseId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteExpense(
+            @PathVariable int groupId,
+            @PathVariable int expenseId) {
+
+        Group group =
+                groupRepository.findById(groupId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Group not found: " + groupId
+                                )
+                        );
+
+        expenseService.deleteExpense(
+                group,
+                expenseId
+        );
+    }
+
+    // =========================
+    // FIND STUDENT
+    // =========================
 
     private Student findStudent(
             Group group,
             Integer studentId) {
 
         if (studentId == null) {
+
             throw new IllegalArgumentException(
                     "Student ID is required."
             );
@@ -185,11 +261,16 @@ public void deleteExpense(
                 .findFirst()
                 .orElseThrow(() ->
                         new IllegalArgumentException(
-                                "Student " + studentId +
-                                " does not belong to this group."
+                                "Student " +
+                                        studentId +
+                                        " does not belong to this group."
                         )
                 );
     }
+
+    // =========================
+    // REQUEST DTO
+    // =========================
 
     public record CreateExpenseRequest(
             String description,
@@ -197,6 +278,7 @@ public void deleteExpense(
             int payerId,
             List<Integer> participantIds,
             ExpenseCategory category,
+            String customCategory,
             SplitType splitType,
             Map<Integer, Double> values
     ) {

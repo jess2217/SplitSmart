@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,6 +24,15 @@ public class Expense {
 
     @Enumerated(EnumType.STRING)
     private ExpenseCategory category;
+
+    /*
+     * Used when category is OTHER.
+     *
+     * Example:
+     * category = OTHER
+     * customCategory = "Hotel"
+     */
+    private String customCategory;
 
     @Enumerated(EnumType.STRING)
     private SplitType splitType;
@@ -66,6 +74,7 @@ public class Expense {
             double amount,
             Student payer,
             ExpenseCategory category,
+            String customCategory,
             SplitType splitType,
             LocalDateTime dateTime,
             Group group,
@@ -76,6 +85,7 @@ public class Expense {
         this.amount = amount;
         this.payer = payer;
         this.category = category;
+        this.customCategory = customCategory;
         this.splitType = splitType;
         this.dateTime = dateTime;
         this.group = group;
@@ -98,36 +108,65 @@ public class Expense {
 
     /*
      * Constructor used when creating a NEW expense.
-     *
-     * Group is intentionally not required here because
-     * Group.addExpense(expense) will set it.
      */
-/*
- * Constructor used when creating a new expense
- * with an associated group.
- */
-public Expense(
-        String description,
-        double amount,
-        Student payer,
-        ExpenseCategory category,
-        SplitType splitType,
-        LocalDateTime dateTime,
-        Group group,
-        Map<Student, Double> shares) {
+    public Expense(
+            String description,
+            double amount,
+            Student payer,
+            ExpenseCategory category,
+            String customCategory,
+            SplitType splitType,
+            LocalDateTime dateTime,
+            Group group,
+            Map<Student, Double> shares) {
 
-    this(
-            0,
-            description,
-            amount,
-            payer,
-            category,
-            splitType,
-            dateTime,
-            group,
-            shares
-    );
-}
+        this(
+                0,
+                description,
+                amount,
+                payer,
+                category,
+                customCategory,
+                splitType,
+                dateTime,
+                group,
+                shares
+        );
+    }
+
+    /*
+     * Backward-compatible constructor.
+     *
+     * Used by existing tests/code that does not provide
+     * a custom category.
+     */
+    public Expense(
+            int id,
+            String description,
+            double amount,
+            Student payer,
+            ExpenseCategory category,
+            SplitType splitType,
+            LocalDateTime dateTime,
+            Map<Student, Double> shares) {
+
+        this(
+                id,
+                description,
+                amount,
+                payer,
+                category,
+                null,
+                splitType,
+                dateTime,
+                null,
+                shares
+        );
+    }
+
+    // =========================
+    // GETTERS
+    // =========================
 
     public int getId() {
         return id;
@@ -149,6 +188,10 @@ public Expense(
         return category;
     }
 
+    public String getCustomCategory() {
+        return customCategory;
+    }
+
     public SplitType getSplitType() {
         return splitType;
     }
@@ -161,31 +204,24 @@ public Expense(
         return group;
     }
 
+    // =========================
+    // SETTERS
+    // =========================
+
+    public void setCustomCategory(
+            String customCategory) {
+
+        this.customCategory = customCategory;
+    }
+
     public void setGroup(Group group) {
+
         this.group = group;
     }
-    public Expense(
-        int id,
-        String description,
-        double amount,
-        Student payer,
-        ExpenseCategory category,
-        SplitType splitType,
-        LocalDateTime dateTime,
-        Map<Student, Double> shares) {
 
-    this(
-            id,
-            description,
-            amount,
-            payer,
-            category,
-            splitType,
-            dateTime,
-            null,
-            shares
-    );
-}
+    // =========================
+    // SHARES
+    // =========================
 
     public Map<Student, Double> getShares() {
 
@@ -203,8 +239,19 @@ public Expense(
         return result;
     }
 
+    // =========================
+    // TO STRING
+    // =========================
+
     @Override
     public String toString() {
+
+        String displayCategory =
+                category == ExpenseCategory.OTHER &&
+                customCategory != null &&
+                !customCategory.isBlank()
+                        ? customCategory
+                        : String.valueOf(category);
 
         return "Expense ID: " + id +
                 " | " + description +
@@ -213,7 +260,7 @@ public Expense(
                 " | Paid by: " +
                 payer.getName() +
                 " | Category: " +
-                category +
+                displayCategory +
                 " | Split: " +
                 splitType;
     }

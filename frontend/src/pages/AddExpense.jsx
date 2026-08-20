@@ -144,10 +144,12 @@ function AddExpense({
                     selectedMembers.map(Number),
 
                 
-                category:
-                    category === "OTHER"
-                        ? customCategory.trim()
-                        : category,
+                category: category,
+
+customCategory:
+    category === "OTHER"
+        ? customCategory.trim()
+        : null,
 
                 splitType,
 
