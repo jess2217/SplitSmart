@@ -15,6 +15,7 @@ import GroupDetails from "./pages/GroupDetails";
 import AddExpense from "./pages/AddExpense";
 import Balances from "./pages/Balances";
 import Settlements from "./pages/Settlements";
+import Profile from "./pages/Profile";
 
 import { api } from "./services/Api";
 
@@ -68,7 +69,6 @@ const handleLogin = (user) => {
         "splitsmart_authenticated",
         "true"
     );
-    
 
     localStorage.setItem(
         "splitsmart_current_user",
@@ -113,6 +113,50 @@ const handleLogin = (user) => {
 
         console.log("Logged out successfully.");
     };
+
+    // --------------------------------------------------
+// UPDATE PROFILE
+// --------------------------------------------------
+
+const handleProfileUpdate = async (updatedUser) => {
+
+    try {
+
+        const savedUser =
+            await api.updateProfile(
+                updatedUser.id,
+                {
+                    name: updatedUser.name,
+                    email: updatedUser.email
+                }
+            );
+
+        // Update React state
+        setCurrentUser(savedUser);
+
+        // Update localStorage
+        localStorage.setItem(
+            "splitsmart_current_user",
+            JSON.stringify(savedUser)
+        );
+
+        console.log(
+            "Profile updated successfully:",
+            savedUser
+        );
+
+        return savedUser;
+
+    } catch (error) {
+
+        console.error(
+            "PROFILE UPDATE ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
 
 
     // --------------------------------------------------
@@ -346,26 +390,24 @@ const handleSignup = (userData) => {
     // OPEN ADD EXPENSE
     // --------------------------------------------------
 
-    function openCreateExpense() {
+   function openCreateExpense() {
 
-        if (!selectedGroupId) {
-
-            if (groups.length > 0) {
-
-                setSelectedGroupId(
-                    groups[0].id
-                );
-
-                setActivePage(
-                    "add-expense"
-                );
-            }
-
-            return;
-        }
-
-        setActivePage("add-expense");
+    if (!groups || groups.length === 0) {
+        setError("Please create a group before adding an expense.");
+        setActivePage("groups");
+        return;
     }
+
+    let groupId = selectedGroupId;
+
+    // If no group is selected, use the first available group
+    if (!groupId) {
+        groupId = groups[0].id;
+        setSelectedGroupId(groupId);
+    }
+
+    setActivePage("add-expense");
+}
 
 
     // --------------------------------------------------
@@ -663,16 +705,13 @@ const handleSignup = (userData) => {
 
             return (
                 <Expenses
-                    groups={groups}
-                    groupData={groupData}
-                    selectedGroupId={
-                        selectedGroupId
-                    }
-                    onOpenGroup={openGroup}
-                    onDeleteExpense={
-                        deleteExpense
-                    }
-                />
+    groups={groups}
+    groupData={groupData}
+    selectedGroupId={selectedGroupId}
+    onOpenGroup={openGroup}
+    onDeleteExpense={deleteExpense}
+    onAddExpense={openCreateExpense}
+/>
             );
         }
 
@@ -779,6 +818,7 @@ const handleSignup = (userData) => {
                     onDeleteGroup={
                         deleteGroup
                     }
+                    currentUser={currentUser}
                 />
             );
         }
@@ -877,6 +917,25 @@ if (
 
         return null;
     }
+    // ----------------------------------------------
+// PROFILE
+// ----------------------------------------------
+
+if (
+    activePage === "profile"
+) {
+
+    return (
+        <Profile
+    currentUser={currentUser}
+    onBack={() =>
+        setActivePage("dashboard")
+    }
+    onLogout={handleLogout}
+    onProfileUpdate={handleProfileUpdate}
+/>
+    );
+}
 
 
     // --------------------------------------------------
@@ -932,11 +991,7 @@ if (
         mobileMenu
     }
     setOpen={
-        setMobileMenu
-    }
-    onAddExpense={
-        openCreateExpense
-    }
+        setMobileMenu}
     onLogout={
         handleLogout
     }

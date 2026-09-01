@@ -21,11 +21,21 @@ public class ExactSplitStrategy implements SplitStrategy {
             );
         }
 
-        if (values == null || values.size() != participants.size()) {
-            throw new InvalidSplitException(
-                    "Exact amounts are required for every participant."
-            );
-        }
+        if (values == null ||
+        values.size() != participants.size()) {
+
+    throw new InvalidSplitException(
+            "Exact amounts are required for every participant."
+    );
+}
+
+if (!values.keySet().containsAll(participants) ||
+        !participants.containsAll(values.keySet())) {
+
+    throw new InvalidSplitException(
+            "Exact amounts must be provided only for the selected participants."
+    );
+}
 
         double total = 0;
 

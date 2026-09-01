@@ -4,85 +4,68 @@ import {
     Receipt,
     Wallet,
     ArrowRightLeft,
-    Plus,
     X,
-    LogOut
+    ChevronRight
 } from "lucide-react";
-
-import { useState } from "react";
 
 function Sidebar({
     activePage,
     setActivePage,
     open,
     setOpen,
-    onAddExpense,
-    onLogout,
     currentUser
 }) {
 
-    const [profileOpen, setProfileOpen] =
-        useState(false);
-
-  const items = [
-    {
-        id: "dashboard",
-        label: "Dashboard",
-        icon: LayoutDashboard
-    },
-    {
-        id: "groups",
-        label: "Groups",
-        icon: Users
-    },
-    {
-        id: "members",
-        label: "Members",
-        icon: Users
-    },
-    {
-        id: "expenses",
-        label: "Expenses",
-        icon: Receipt
-    },
-    {
-        id: "balances",
-        label: "Balances",
-        icon: Wallet
-    },
-    {
-        id: "settlements",
-        label: "Settlements",
-        icon: ArrowRightLeft
-    }
-];
-    
+    const items = [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: LayoutDashboard
+        },
+        {
+            id: "groups",
+            label: "Groups",
+            icon: Users
+        },
+        {
+            id: "members",
+            label: "Members",
+            icon: Users
+        },
+        {
+            id: "expenses",
+            label: "Expenses",
+            icon: Receipt
+        },
+        {
+            id: "balances",
+            label: "Balances",
+            icon: Wallet
+        },
+        {
+            id: "settlements",
+            label: "Settlements",
+            icon: ArrowRightLeft
+        }
+    ];
 
     function navigate(id) {
+
         setActivePage(id);
         setOpen(false);
     }
 
-    function handleAddExpense() {
+    function openProfile() {
+
+        setActivePage("profile");
         setOpen(false);
-
-        if (onAddExpense) {
-            onAddExpense();
-        }
-    }
-
-    function handleLogout() {
-
-        setProfileOpen(false);
-        setOpen(false);
-
-        if (onLogout) {
-            onLogout();
-        }
     }
 
     const userName =
         currentUser?.name || "User";
+
+    const userEmail =
+        currentUser?.email || "No email available";
 
     const userInitial =
         userName
@@ -91,6 +74,8 @@ function Sidebar({
 
     return (
         <>
+            {/* MOBILE OVERLAY */}
+
             {open && (
                 <div
                     className="mobile-overlay"
@@ -98,11 +83,16 @@ function Sidebar({
                 />
             )}
 
+
             <aside
                 className={`sidebar ${
                     open ? "sidebar-open" : ""
                 }`}
             >
+
+                {/* =========================
+                    SIDEBAR HEADER
+                ========================= */}
 
                 <div className="sidebar-top">
 
@@ -126,18 +116,28 @@ function Sidebar({
 
                     </div>
 
+
                     <button
+                        type="button"
                         className="mobile-close"
                         onClick={() => setOpen(false)}
                     >
+
                         <X size={20} />
+
                     </button>
 
                 </div>
 
+
+                {/* =========================
+                    MENU
+                ========================= */}
+
                 <div className="sidebar-section-title">
                     MENU
                 </div>
+
 
                 <nav className="sidebar-nav">
 
@@ -147,6 +147,7 @@ function Sidebar({
 
                         return (
                             <button
+                                type="button"
                                 key={item.id}
                                 className={`nav-item ${
                                     activePage === item.id
@@ -166,91 +167,52 @@ function Sidebar({
 
                             </button>
                         );
+
                     })}
 
                 </nav>
+
+
+                {/* =========================
+                    PROFILE
+                ========================= */}
 
                 <div className="sidebar-bottom">
 
                     <button
                         type="button"
-                        className="quick-card"
-                        onClick={handleAddExpense}
+                        className={`profile-button ${
+                            activePage === "profile"
+                                ? "profile-active"
+                                : ""
+                        }`}
+                        onClick={openProfile}
                     >
 
-                        <div className="quick-icon">
-                            <Plus size={17} />
+                        <div className="profile-avatar">
+                            {userInitial}
                         </div>
 
-                        <div>
+
+                        <div className="profile-info">
 
                             <strong>
-                                Add an expense
+                                {userName}
                             </strong>
 
                             <small>
-                                Split your latest bill
+                                {userEmail}
                             </small>
 
                         </div>
 
+
+                        <ChevronRight
+                            size={17}
+                            className="profile-arrow"
+                        />
+
                     </button>
-
-                    {/* PROFILE */}
-
-                    <div className="profile-wrapper">
-
-                        <button
-                            type="button"
-                            className="profile-button"
-                            onClick={() =>
-                                setProfileOpen(
-                                    !profileOpen
-                                )
-                            }
-                        >
-
-                            <div className="profile-avatar">
-                                {userInitial}
-                            </div>
-
-                            <div className="profile-info">
-
-                                <strong>
-                                    {userName}
-                                </strong>
-
-                                <small>
-                                    Student account
-                                </small>
-
-                            </div>
-
-                        </button>
-
-                        {profileOpen && (
-
-                            <div className="profile-menu">
-
-                                <button
-                                    type="button"
-                                    className="logout-button"
-                                    onClick={handleLogout}
-                                >
-
-                                    <LogOut size={18} />
-
-                                    <span>
-                                        Logout
-                                    </span>
-
-                                </button>
-
-                            </div>
-
-                        )}
-
-                    </div>
 
                 </div>
 

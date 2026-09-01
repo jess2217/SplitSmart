@@ -244,7 +244,93 @@ return AuthResponse.from(savedUser);
 
        return AuthResponse.from(user);
     }
+// =========================
+// CHANGE PASSWORD
+// =========================
 
+@PutMapping("/change-password")
+public void changePassword(
+        @RequestBody ChangePasswordRequest request) {
+
+    if (request == null ||
+            request.userId() <= 0 ||
+            request.currentPassword() == null ||
+            request.currentPassword().isBlank() ||
+            request.newPassword() == null ||
+            request.newPassword().isBlank()) {
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Current password and new password are required."
+        );
+    }
+
+    if (request.newPassword().length() < 6) {
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "New password must be at least 6 characters."
+        );
+    }
+
+    User user =
+            userRepository.findById(request.userId())
+                    .orElseThrow(() ->
+                            new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND,
+                                    "User not found."
+                            )
+                    );
+
+    String storedPassword =
+            user.getPassword();
+
+    boolean currentPasswordMatches;
+
+    /*
+     * BCrypt password
+     */
+    if (storedPassword != null &&
+            storedPassword.startsWith("$2")) {
+
+        currentPasswordMatches =
+                passwordEncoder.matches(
+                        request.currentPassword(),
+                        storedPassword
+                );
+
+    } else {
+
+        /*
+         * Support older accounts that still have
+         * a plaintext password.
+         */
+        currentPasswordMatches =
+                storedPassword != null &&
+                storedPassword.equals(
+                        request.currentPassword()
+                );
+    }
+
+    if (!currentPasswordMatches) {
+
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Current password is incorrect."
+        );
+    }
+
+    /*
+     * Always store the new password as BCrypt.
+     */
+    user.setPassword(
+            passwordEncoder.encode(
+                    request.newPassword()
+            )
+    );
+
+    userRepository.save(user);
+}
     // =========================
     // REQUEST DTOs
     // =========================
@@ -261,4 +347,10 @@ return AuthResponse.from(savedUser);
             String password
     ) {
     }
+    public record ChangePasswordRequest(
+        int userId,
+        String currentPassword,
+        String newPassword
+) {
+}
 }

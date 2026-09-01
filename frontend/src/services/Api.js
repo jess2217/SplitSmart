@@ -74,6 +74,30 @@ export const api = {
             method: "POST",
             body: JSON.stringify(credentials)
         }),
+changePassword: (userId, currentPassword, newPassword) =>
+    request(
+        "/auth/change-password",
+        {
+            method: "PUT",
+            body: JSON.stringify({
+                userId,
+                currentPassword,
+                newPassword
+            })
+        }
+    ),
+        // =========================
+// PROFILE
+// =========================
+
+updateProfile: (userId, profile) =>
+    request(
+        `/users/${userId}`,
+        {
+            method: "PUT",
+            body: JSON.stringify(profile)
+        }
+    ),
 
 
     // =========================

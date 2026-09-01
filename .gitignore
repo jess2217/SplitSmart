@@ -22,3 +22,10 @@ frontend/dist/
 # Environment variables
 .env
 .env.*
+# Node
+node_modules/
+dist/
+
+# npm
+npm-debug.log*
+backend/src/main/resources/application.properties

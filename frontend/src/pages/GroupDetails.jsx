@@ -19,7 +19,8 @@ function GroupDetails({
     onAddExpense,
     onBalances,
     onMemberDeleted,
-    onDeleteGroup
+    onDeleteGroup,
+    currentUser
 }) {
 
     const [showMemberForm, setShowMemberForm] =
@@ -184,34 +185,95 @@ function GroupDetails({
     // DELETE MEMBER
     // =========================
 
-    async function confirmDeleteMember() {
+   async function confirmDeleteMember() {
 
-        if (!memberToDelete) {
-            return;
+    if (!memberToDelete) {
+        return;
+    }
+
+    if (!currentUser?.id) {
+
+        setDeleteError(
+            "Unable to identify the logged-in user."
+        );
+
+        return;
+    }
+
+    try {
+
+        setDeletingMember(true);
+        setDeleteError("");
+
+        console.log(
+            "Deleting member:",
+            group.id,
+            memberToDelete.id,
+            "by user:",
+            currentUser.id
+        );
+
+        await api.deleteMember(
+            group.id,
+            memberToDelete.id,
+            currentUser.id
+        );
+
+        console.log(
+            "Member deleted successfully."
+        );
+
+        setMemberToDelete(null);
+
+        if (typeof onMemberDeleted === "function") {
+            await onMemberDeleted();
         }
+
+    } catch (error) {
+
+        console.error(
+            "DELETE MEMBER ERROR:",
+            error
+        );
+
+        setDeleteError(
+            error.message ||
+            "Unable to delete member."
+        );
+
+    } finally {
+
+        setDeletingMember(false);
+    }
+}
+
+    // =========================
+    // DELETE EXPENSE
+    // =========================
+
+    async function handleDeleteExpense(
+        groupId,
+        expenseId
+    ) {
 
         try {
 
-            setDeletingMember(true);
-            setDeleteError("");
-
             console.log(
-                "Deleting member:",
-                group.id,
-                memberToDelete.id
+                "Deleting expense:",
+                groupId,
+                expenseId
             );
 
-            await api.deleteMember(
-                group.id,
-                memberToDelete.id
+            await api.deleteExpense(
+                groupId,
+                expenseId
             );
 
             console.log(
-                "Member deleted successfully."
+                "Expense deleted successfully."
             );
 
-            setMemberToDelete(null);
-
+            // Refresh group data
             if (typeof onMemberDeleted === "function") {
                 await onMemberDeleted();
             }
@@ -219,18 +281,14 @@ function GroupDetails({
         } catch (error) {
 
             console.error(
-                "DELETE MEMBER ERROR:",
+                "DELETE EXPENSE ERROR:",
                 error
             );
 
-            setDeleteError(
+            window.alert(
                 error.message ||
-                "Unable to delete member."
+                "Unable to delete expense."
             );
-
-        } finally {
-
-            setDeletingMember(false);
         }
     }
 
@@ -720,6 +778,8 @@ function GroupDetails({
                             <ExpenseItem
                                 key={expense.id}
                                 expense={expense}
+                                groupId={group.id}
+                                onDelete={handleDeleteExpense}
                             />
 
                         ))}

@@ -90,6 +90,7 @@ public class MemberController {
         groupRepository.save(group);
     }
 
+
     // =========================
     // GET MEMBERS
     // =========================
@@ -102,6 +103,7 @@ public class MemberController {
 
         return group.getMembers();
     }
+
 
     // =========================
     // ADD MEMBER
@@ -138,10 +140,16 @@ public class MemberController {
             );
         }
 
+
+        // -------------------------
+        // CLEAN EMAIL
+        // -------------------------
+
         String email =
                 request.email()
                         .trim()
                         .toLowerCase();
+
 
         // -------------------------
         // FIND REGISTERED USER
@@ -152,6 +160,7 @@ public class MemberController {
                         .orElse(null);
 
         Student student;
+
 
         // =====================================================
         // REGISTERED USER
@@ -167,6 +176,7 @@ public class MemberController {
              */
             student = user.getStudent();
 
+
             /*
              * Older accounts may not have a Student linked.
              *
@@ -179,6 +189,7 @@ public class MemberController {
                         studentRepository
                                 .findByEmail(email)
                                 .orElse(null);
+
 
                 /*
                  * Only create a Student if there is genuinely
@@ -199,6 +210,7 @@ public class MemberController {
                             studentRepository.save(student);
                 }
 
+
                 /*
                  * Link the existing/new Student to the User.
                  */
@@ -208,6 +220,7 @@ public class MemberController {
             }
 
         }
+
 
         // =====================================================
         // UNREGISTERED USER
@@ -225,6 +238,7 @@ public class MemberController {
                     studentRepository
                             .findByEmail(email)
                             .orElse(null);
+
 
             /*
              * Only create a new Student if one doesn't exist.
@@ -245,14 +259,23 @@ public class MemberController {
             }
         }
 
+
         // -------------------------
         // ADD MEMBER TO GROUP
         // -------------------------
 
         if (!group.addMember(student)) {
 
+            /*
+             * The request itself is valid,
+             * but the student already exists
+             * in this group.
+             *
+             * 409 Conflict is more appropriate
+             * than 400 Bad Request.
+             */
             throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
+                    HttpStatus.CONFLICT,
                     "Student is already in the group."
             );
         }
@@ -261,6 +284,7 @@ public class MemberController {
 
         return student;
     }
+
 
     // =========================
     // FIND GROUP
@@ -276,6 +300,7 @@ public class MemberController {
                         )
                 );
     }
+
 
     // =========================
     // REQUEST DTO

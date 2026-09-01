@@ -55,9 +55,9 @@ function Expenses({
     groupData = {},
     selectedGroupId,
     onOpenGroup,
-    onDeleteExpense
+    onDeleteExpense,
+    onAddExpense
 }) {
-
     /*
      * Controls the custom delete confirmation popup.
      */
@@ -235,40 +235,44 @@ function Expenses({
                 HEADER
             ========================= */}
 
-            <div className="page-header">
+         <div className="page-header">
 
-                <div>
+    <div>
+        <p className="eyebrow">
+            ACTIVITY
+        </p>
 
-                    <p className="eyebrow">
-                        ACTIVITY
-                    </p>
+        <h1>
+            Expenses
+        </h1>
 
-                    <h1>
-                        Expenses
-                    </h1>
+        <p className="page-description">
+            Track and manage your group expenses.
+        </p>
+    </div>
 
-                    <p className="page-description">
-                        Track and manage your group expenses.
-                    </p>
+    <div className="expense-header-actions">
 
-                </div>
+        <div className="expense-total-card">
+            <span>
+                Total Expenses
+            </span>
 
+            <strong>
+                ₹{totalExpenses.toFixed(2)}
+            </strong>
+        </div>
 
-                <div className="expense-total-card">
+        <button
+    type="button"
+    className="primary-button"
+    onClick={onAddExpense}
+>
+    + Add Expense
+</button>
+    </div>
 
-                    <span>
-                        Total Expenses
-                    </span>
-
-                    <strong>
-                        ₹{totalExpenses.toFixed(2)}
-                    </strong>
-
-                </div>
-
-            </div>
-
-
+</div>
             {/* =========================
                 NO GROUPS
             ========================= */}

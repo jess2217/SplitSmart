@@ -19,15 +19,20 @@ public class Group {
 @JoinColumn(name = "owner_id")
 private User owner;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "group_members",
-            joinColumns = @JoinColumn(name = "group_id"),
-            inverseJoinColumns = @JoinColumn(name = "student_id")
-    )
-    private final List<Student> members =
-            new ArrayList<>();
-
+@ManyToMany(fetch = FetchType.EAGER)
+@JoinTable(
+        name = "group_members",
+        joinColumns = @JoinColumn(name = "group_id"),
+        inverseJoinColumns = @JoinColumn(name = "student_id"),
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_group_student",
+                        columnNames = {"group_id", "student_id"}
+                )
+        }
+)
+private final List<Student> members =
+        new ArrayList<>();
    @OneToMany(
         mappedBy = "group",
         cascade = CascadeType.ALL,

@@ -37,14 +37,141 @@ function Dashboard({
     const totalExpenseCount =
         allExpenses.length;
 
+
+    // =========================================
+    // UNIQUE MEMBERS
+    // =========================================
+
+    /*
+     * A person can belong to multiple groups.
+     *
+     * Example:
+     * Ak -> Group 1
+     * Ak -> Group 2
+     *
+     * Dashboard should count Ak only once.
+     */
+
+    const uniqueMembers = new Map();
+
+    Object.values(groupData || {})
+        .forEach((data) => {
+
+            (data?.members || [])
+                .forEach((member) => {
+
+                    if (member?.id != null) {
+
+                        uniqueMembers.set(
+                            member.id,
+                            member
+                        );
+
+                    }
+
+                });
+
+        });
+
     const totalMembers =
-        Object.values(groupData || {})
-            .reduce(
-                (total, data) =>
-                    total +
-                    (data?.members?.length || 0),
-                0
-            );
+        uniqueMembers.size;
+
+
+    // =========================================
+    // YOUR BALANCE
+    // =========================================
+
+    /*
+     * Positive balance:
+     * Someone owes you money.
+     *
+     * Negative balance:
+     * You owe someone money.
+     *
+     * We calculate this across all groups.
+     */
+
+    let yourBalance = 0;
+
+    Object.values(groupData || {})
+        .forEach((data) => {
+
+            const members =
+                data?.members || [];
+
+            const balances =
+                Array.isArray(data?.balances)
+                    ? data.balances
+                    : [];
+
+            /*
+             * Find the Student belonging to
+             * the currently logged-in User.
+             */
+            const currentStudent =
+                members.find(
+                    (member) =>
+                        member?.email &&
+                        currentUser?.email &&
+                        member.email
+                            .toLowerCase() ===
+                        currentUser.email
+                            .toLowerCase()
+                );
+
+            if (!currentStudent) {
+                return;
+            }
+
+            /*
+             * Find this student's balance
+             * in the current group.
+             */
+            const balance =
+                balances.find(
+                    (item) =>
+                        Number(item.studentId) ===
+                        Number(currentStudent.id)
+                );
+
+            if (balance) {
+
+                yourBalance +=
+                    Number(
+                        balance.balance || 0
+                    );
+
+            }
+
+        });
+
+
+    /*
+     * Remove tiny floating-point errors.
+     */
+    yourBalance =
+        Math.round(
+            yourBalance * 100
+        ) / 100;
+
+
+    /*
+     * Positive = money others owe you.
+     */
+    const youAreOwed =
+        yourBalance > 0
+            ? yourBalance
+            : 0;
+
+
+    /*
+     * Negative = money you owe others.
+     */
+    const youOwe =
+        yourBalance < 0
+            ? Math.abs(yourBalance)
+            : 0;
+
 
     // =========================================
     // RECENT EXPENSES
@@ -62,6 +189,7 @@ function Dashboard({
                     )
             )
             .slice(0, 5);
+
 
     // =========================================
     // GROUP SPENDING
@@ -97,6 +225,7 @@ function Dashboard({
             };
         });
 
+
     const maxGroupSpent =
         Math.max(
             ...groupSummaries.map(
@@ -105,6 +234,7 @@ function Dashboard({
             ),
             1
         );
+
 
     // =========================================
     // FORMAT DATE
@@ -160,8 +290,11 @@ function Dashboard({
                         expense.id
                 )
             ) {
+
                 return group;
+
             }
+
         }
 
         return null;
@@ -214,9 +347,10 @@ function Dashboard({
                         OVERVIEW
                     </p>
 
-                  <h1>
-    Good to see you, {currentUser?.name || "User"}
-</h1>
+                    <h1>
+                        Good to see you,{" "}
+                        {currentUser?.name || "User"}
+                    </h1>
 
                     <p className="page-description">
                         Here's what's happening
@@ -270,9 +404,10 @@ function Dashboard({
                         OVERVIEW
                     </p>
 
-                   <h1>
-    Good to see you, {currentUser?.name || "User"}
-</h1>
+                    <h1>
+                        Good to see you,{" "}
+                        {currentUser?.name || "User"}
+                    </h1>
 
                     <p className="page-description">
                         Here's what's happening
@@ -305,6 +440,52 @@ function Dashboard({
 
                     <strong>
                         ₹{totalSpent.toFixed(2)}
+                    </strong>
+
+                    <small>
+                        Across all groups
+                    </small>
+
+                </div>
+
+
+                {/* YOU ARE OWED */}
+
+                <div className="dashboard-kpi-card">
+
+                    <div className="dashboard-kpi-icon green">
+                        <Wallet size={20} />
+                    </div>
+
+                    <span>
+                        YOU ARE OWED
+                    </span>
+
+                    <strong>
+                        ₹{youAreOwed.toFixed(2)}
+                    </strong>
+
+                    <small>
+                        Across all groups
+                    </small>
+
+                </div>
+
+
+                {/* YOU OWE */}
+
+                <div className="dashboard-kpi-card">
+
+                    <div className="dashboard-kpi-icon orange">
+                        <Wallet size={20} />
+                    </div>
+
+                    <span>
+                        YOU OWE
+                    </span>
+
+                    <strong>
+                        ₹{youOwe.toFixed(2)}
                     </strong>
 
                     <small>
@@ -354,7 +535,7 @@ function Dashboard({
                     </strong>
 
                     <small>
-                        Total members
+                        Unique members
                     </small>
 
                 </div>
@@ -479,22 +660,26 @@ function Dashboard({
                                                 </span>
 
                                                 <small>
+
                                                     {
                                                         formatDate(
                                                             expense.dateTime
                                                         )
                                                     }
+
                                                 </small>
 
                                             </div>
 
 
                                             <strong className="dashboard-expense-amount">
+
                                                 ₹
                                                 {Number(
                                                     expense.amount ||
                                                     0
                                                 ).toFixed(2)}
+
                                             </strong>
 
                                         </div>
@@ -503,6 +688,7 @@ function Dashboard({
                             )}
 
                         </div>
+
                     )}
 
 
@@ -515,6 +701,7 @@ function Dashboard({
                             </span>
 
                         </div>
+
                     )}
 
                 </section>
@@ -569,6 +756,7 @@ function Dashboard({
                                     >
 
                                         <div className="dashboard-group-avatar">
+
                                             {
                                                 group.name
                                                     ?.charAt(
@@ -576,6 +764,7 @@ function Dashboard({
                                                     )
                                                     ?.toUpperCase()
                                             }
+
                                         </div>
 
 
@@ -588,17 +777,22 @@ function Dashboard({
                                             </strong>
 
                                             <span>
+
                                                 {
                                                     group
                                                         .members
                                                         .length
                                                 }{" "}
-                                                {group
-                                                    .members
-                                                    .length ===
-                                                1
-                                                    ? "member"
-                                                    : "members"}
+
+                                                {
+                                                    group
+                                                        .members
+                                                        .length ===
+                                                    1
+                                                        ? "member"
+                                                        : "members"
+                                                }
+
                                             </span>
 
 
@@ -613,12 +807,15 @@ function Dashboard({
 
                                             </div>
 
+
                                             <small>
+
                                                 ₹
                                                 {group.spent.toFixed(
                                                     2
                                                 )}{" "}
                                                 spent
+
                                             </small>
 
                                         </div>
@@ -634,13 +831,17 @@ function Dashboard({
                                             }
                                             title="Open group"
                                         >
+
                                             <ArrowRight
                                                 size={17}
                                             />
+
                                         </button>
 
                                     </div>
+
                                 );
+
                             })}
 
                     </div>
@@ -696,39 +897,52 @@ function Dashboard({
                                 >
 
                                     <div className="dashboard-activity-icon">
+
                                         <Receipt
                                             size={17}
                                         />
+
                                     </div>
+
 
                                     <div>
 
                                         <strong>
+
                                             {
                                                 expense
                                                     .payer
                                                     ?.name ||
                                                 "Someone"
                                             }{" "}
+
                                             added an expense
+
                                         </strong>
 
+
                                         <span>
+
                                             {
                                                 expense
                                                     .description ||
                                                 "Expense"
                                             }{" "}
+
                                             of ₹
+
                                             {Number(
                                                 expense.amount ||
                                                 0
                                             ).toFixed(
                                                 2
                                             )}
+
                                         </span>
 
+
                                         <small>
+
                                             {
                                                 formatDate(
                                                     expense.dateTime
@@ -737,13 +951,17 @@ function Dashboard({
 
                                             {group &&
                                                 ` • ${group.name}`}
+
                                         </small>
 
                                     </div>
 
                                 </div>
+
                             );
+
                         })}
+
 
                     {recentExpenses.length === 0 && (
 
@@ -758,6 +976,7 @@ function Dashboard({
             </section>
 
         </div>
+
     );
 }
 
