@@ -103,3 +103,26 @@ User3      -₹300
 The settlement would be:
 
 User3 → User1    ₹300
+
+Technology Stack :-
+i.Frontend
+React
+Vite
+JavaScript
+CSS
+ii.Backend
+Java 25
+Spring Boot 4
+Spring Data JPA
+Hibernate
+Maven
+iii.Database
+PostgreSQL
+Neon
+iv.Deployment
+Vercel — Frontend
+Render — Backend
+Neon — Database
+
+The Live Application:-
+https://split-smart-lake.vercel.app/
