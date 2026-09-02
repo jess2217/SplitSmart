@@ -78,9 +78,9 @@ Each member can be assigned a percentage.
 
 Expense: ₹1,000
 
-Ak      20%
-Lee     30%
-Sofia   50%
+User1      20%
+User2      30%
+User3      50%
 
 The percentages must add up to 100%.
 
