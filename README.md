@@ -110,15 +110,18 @@ React,
 Vite,
 JavaScript,
 CSS
+
 ii. Backend -
 Java 25,
 Spring Boot 4,
 Spring Data JPA,
 Hibernate,
 Maven
+
 iii. Database -
 PostgreSQL,
 Neon
+
 iv.Deployment -
 Vercel — Frontend
 Render — Backend
