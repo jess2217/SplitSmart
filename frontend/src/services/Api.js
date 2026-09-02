@@ -1,5 +1,5 @@
 const API_BASE_URL =
-    import.meta.env.VITE_API_URL || "/api";
+    "https://splitsmart-o8v0.onrender.com/api";
 
 async function request(endpoint, options = {}) {
 
