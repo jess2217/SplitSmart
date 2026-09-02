@@ -96,30 +96,30 @@ A negative balance means the member needs to pay money.
 
 For example:
 
-User1       +₹300
-User2        ₹0
-User3      -₹300
+User1      = +₹300
+User2     =   ₹0
+User3    =  -₹300
 
 The settlement would be:
 
-User3 → User1    ₹300
+User3 → User1   = ₹300
 
 Technology Stack :-
-i.Frontend
-React
-Vite
-JavaScript
+i. Frontend -
+React,
+Vite,
+JavaScript,
 CSS
-ii.Backend
-Java 25
-Spring Boot 4
-Spring Data JPA
-Hibernate
+ii. Backend -
+Java 25,
+Spring Boot 4,
+Spring Data JPA,
+Hibernate,
 Maven
-iii.Database
-PostgreSQL
+iii. Database -
+PostgreSQL,
 Neon
-iv.Deployment
+iv.Deployment -
 Vercel — Frontend
 Render — Backend
 Neon — Database
